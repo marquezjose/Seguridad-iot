@@ -1,0 +1,23 @@
+# PlatformIO (Archivos de compilación y entorno local)
+.pio/
+.vscode/
+*.svd
+
+# Archivos binarios y de compilación C/C++
+*.o
+*.obj
+*.out
+*.hex
+*.bin
+*.elf
+
+# Credenciales y Seguridad (¡Crítico para evitar brechas!)
+**/secrets.h
+
+# Infraestructura Docker (Evitar subir la base de datos interna y logs del broker)
+docker/emqx/data/
+docker/emqx/log/
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
