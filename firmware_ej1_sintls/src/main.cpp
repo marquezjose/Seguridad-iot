@@ -95,9 +95,14 @@ void loop() {
     char jsonBuffer[256];
     serializeJson(doc, jsonBuffer);
 
-    // Publicar
-    Serial.print("Publicando mensaje: ");
-    Serial.println(jsonBuffer);
+    // Mostrar payload formateado en Serial Monitor
+    Serial.println("--- Payload JSON publicado ---");
+    char prettyBuffer[256];
+    serializeJsonPretty(doc, prettyBuffer);
+    Serial.println(prettyBuffer);
+    Serial.println("------------------------------");
+
+    // Publicar (compacto por eficiencia)
     client.publish("sensores/temperatura", jsonBuffer, 0); // QoS 0
   }
 }

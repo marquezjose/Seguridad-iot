@@ -1,0 +1,45 @@
+#include "secrets.h"
+#include <PubSubClient.h>
+#include <WiFi.h>
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup() {
+  Serial.begin(115200);
+
+  // Conectar WiFi
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Conectando WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado - IP: " + WiFi.localIP().toString());
+
+  // Configurar broker MQTT
+  client.setServer(MQTT_BROKER, MQTT_PORT);
+}
+
+void loop() {
+  // Reconexión MQTT
+  if (!client.connected()) {
+    Serial.print("Conectando MQTT...");
+    if (client.connect("ESP32Client", MQTT_USER, MQTT_PASSWORD)) {
+      Serial.println(" ok");
+    } else {
+      Serial.println(" falló. Reintentando en 5s");
+      delay(5000);
+      return;
+    }
+  }
+  client.loop();
+
+  // Publicar dato cada 5 segundos
+  float temp = 20.0 + random(0, 100) / 10.0;
+  char msg[128];
+  sprintf(msg, "{\"device\":\"esp32_lab\",\"temperature\":%.1f}", temp);
+  Serial.println(msg);
+  client.publish("sensores/temperatura", msg);
+  delay(5000);
+}
