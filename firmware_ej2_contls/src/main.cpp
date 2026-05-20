@@ -3,19 +3,25 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <time.h>
 
-WiFiClient espClient; // Cliente para conexiones sin TLS (Ejercicio 1)
-// WiFiClientSecure espClientSecure; // Lo usaremos después en el Ejercicio 2
-PubSubClient client(espClient);
+WiFiClientSecure espClientSecure; // Cliente para conexiones seguras con TLS (Ejercicio 2)
+PubSubClient client(espClientSecure);
 
 unsigned long lastMsgTime = 0;
 unsigned long delayTime = 0;
+unsigned long ultimoIntentoReconexion = 0; // Control de tiempo para reconexiones no bloqueantes
 
 // Configuración de NTP para obtener el timestamp
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = -10800; // GMT-3 (Argentina)
 const int daylightOffset_sec = 0;
+
+void mostrarMetricasRAM(const char* fase) {
+  Serial.printf("\n[MÉTRICA-RAM] %s -> Libre actual: %u bytes | Mínima libre registrada: %u bytes | Usada: %u bytes\n", 
+                fase, ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize() - ESP.getFreeHeap());
+}
 
 void setup_wifi() {
   delay(10);
@@ -35,19 +41,20 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Intentando conexión MQTT...");
-    String clientId = "ESP32Client-Lab";
+bool reconnect() {
+  Serial.print("Intentando conexión MQTT no bloqueante...");
+  String clientId = "ESP32Client-Lab";
 
-    if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD)) {
-      Serial.println("conectado");
-    } else {
-      Serial.print("falló, rc=");
-      Serial.print(client.state());
-      Serial.println(" intentando de nuevo en 5 segundos");
-      delay(5000);
-    }
+  unsigned long inicioConexion = micros();
+  if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD)) {
+    unsigned long latenciaConexion = micros() - inicioConexion;
+    Serial.printf("\n[MÉTRICA-LATENCIA] Conexión establecida en: %lu µs (%lu ms)\n", latenciaConexion, latenciaConexion / 1000);
+    mostrarMetricasRAM("MQTT Conectado");
+    return true;
+  } else {
+    Serial.print("falló, rc=");
+    Serial.println(client.state());
+    return false;
   }
 }
 
@@ -56,13 +63,36 @@ float generarDatoAleatorio() {
   return 20.0 + (random(0, 100) / 10.0);
 }
 
+void esperarSincronizacionHora() {
+  Serial.print("Esperando sincronización de hora NTP...");
+  time_t now = time(nullptr);
+  while (now < 24 * 3600) {
+    delay(500);
+    Serial.print(".");
+    now = time(nullptr);
+  }
+  struct tm timeinfo;
+  getLocalTime(&timeinfo);
+  Serial.println("\nHora sincronizada: ");
+  Serial.println(asctime(&timeinfo));
+}
+
 void setup() {
   Serial.begin(115200);
-  setup_wifi();
-  client.setServer(MQTT_BROKER, MQTT_PORT);
+  delay(1000); // Darle tiempo a la consola serial para inicializar
+  mostrarMetricasRAM("ANTES de WiFi");
 
-  // Inicializar servidor de hora
+  setup_wifi();
+  mostrarMetricasRAM("DESPUÉS de WiFi");
+
+  // Configurar cliente seguro con el certificado CA
+  espClientSecure.setCACert(ca_cert);
+
+  // Inicializar servidor de hora y esperar su sincronización
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  esperarSincronizacionHora();
+
+  client.setServer(MQTT_BROKER, MQTT_PORT);
   randomSeed(analogRead(0));
 
   // Establecer el primer retardo aleatorio (jitter entre 2s y 9s)
@@ -71,9 +101,16 @@ void setup() {
 
 void loop() {
   if (!client.connected()) {
-    reconnect();
+    unsigned long ahora = millis();
+    if (ahora - ultimoIntentoReconexion > 5000) {
+      ultimoIntentoReconexion = ahora;
+      if (reconnect()) {
+        ultimoIntentoReconexion = 0;
+      }
+    }
+  } else {
+    client.loop();
   }
-  client.loop();
 
   unsigned long now = millis();
   if (now - lastMsgTime > delayTime) {
@@ -98,6 +135,17 @@ void loop() {
     // Publicar
     Serial.print("Publicando mensaje: ");
     Serial.println(jsonBuffer);
-    client.publish("sensores/temperatura", jsonBuffer, 0); // QoS 0
+    
+    // Publicar y medir latencia
+    unsigned long inicioPub = micros();
+    bool pubResult = client.publish("sensores/temperatura", jsonBuffer, 0); // QoS 0
+    unsigned long latenciaPub = micros() - inicioPub;
+
+    if (pubResult) {
+      Serial.printf("[MÉTRICA-LATENCIA] Publicación exitosa completada en: %lu µs\n", latenciaPub);
+    } else {
+      Serial.println("[ERROR] Falló la publicación MQTT");
+    }
+    mostrarMetricasRAM("Post-Publicación");
   }
 }

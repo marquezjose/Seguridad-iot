@@ -1,0 +1,1655 @@
+TECNICATURA SUPERIOR EN
+
+Telecomunicaciones
+
+Seguridad IoT
+
+Estrategia y Gestión de Proyectos
+para Soluciones IoT
+
+Clase 05
+Tema: Protocolos Seguros en IoT (TLS, HTTPS y MQTT Seguro) .
+Tutor : Mario Gonzalez
+
+Video 1 — Introducción básica a Wireshark
+1
+
+ÍNDICE
+Objetivos
+Introducción
+Comunicación Segura
+TLS
+Función TLS
+Criptografía
+Certiﬁcados
+Protocolos
+Mqtt
+Ejemplo
+Problemas reales
+
+Referencias Bibliográﬁcas
+
+Video 1 — Introducción básica a Wireshark
+2
+
+Objetivo de la clase
+El objetivo de esta clase es entender cómo se protege la comunicación en los
+sistemas IoT y por qué hoy en día la seguridad es un aspecto fundamental en
+cualquier dispositivo conectado a Internet. Se analizarán las diferencias entre
+protocolos inseguros y protocolos seguros, viendo qué riesgos existen cuando la
+información viaja sin protección y cómo pueden evitarse utilizando mecanismos de
+cifrado y autenticación.
+También se estudiará cómo funciona TLS internamente, comprendiendo de manera
+general conceptos como cifrado, intercambio de claves, certificados digitales y
+validación de identidad entre cliente y servidor. La idea es entender qué ocurre
+realmente cuando un dispositivo establece una conexión segura.
+Por último, estos conceptos se llevarán al mundo de los sistemas embebidos y
+microcontroladores, analizando las limitaciones reales que aparecen en dispositivos
+IoT y cómo implementar comunicaciones seguras en proyectos prácticos utilizando
+tecnologías actuales.
+-
+
+Comprender cómo se asegura la comunicación en IoT
+Diferenciar protocolos inseguros vs seguros
+Entender cómo funciona TLS internamente
+Aplicar estos conceptos en sistemas embebidos reales
+
+1. Introducción: El problema de la comunicación en IoT
+En los sistemas IoT, los dispositivos suelen estar conectados de forma permanente a
+una red o a Internet, intercambiando información constantemente con servidores,
+aplicaciones móviles o plataformas en la nube. Estos equipos pueden enviar datos
+de sensores, estados de alarmas, comandos de control, credenciales de acceso y
+muchos otros tipos de información sensible.
+El problema es que muchas veces estos dispositivos funcionan en redes inseguras,
+como redes WiFi públicas, conexiones domésticas mal configuradas o directamente
+sobre Internet abierta. En estos escenarios, si la comunicación no utiliza
+mecanismos de seguridad adecuados, toda la información transmitida puede ser
+interceptada fácilmente por terceros.
+Cuando los datos viajan sin cifrado, cualquier persona con acceso a la misma red y
+herramientas de análisis de tráfico puede visualizar el contenido de la comunicación.
+Un ejemplo típico ocurre en dispositivos IoT que utilizan MQTT sin TLS.
+Supongamos un ESP8266 enviando datos al broker utilizando un usuario y
+contraseña simples:
+● usuario: admin
+● password: 1234
+
+Video 1 — Introducción básica a Wireshark
+3
+
+Si la conexión no está protegida mediante TLS, herramientas como Wireshark
+permiten capturar los paquetes de red y leer esa información directamente en texto
+plano. Esto representa un riesgo importante, ya que un atacante podría obtener
+credenciales, acceder al broker MQTT o incluso controlar dispositivos conectados al
+sistema.
+Por este motivo, la seguridad en las comunicaciones IoT se ha convertido en un
+aspecto fundamental en el diseño de sistemas modernos.
+En IoT, los dispositivos:
+-
+
+Están conectados permanentemente
+Transmiten datos sensibles
+Muchas veces operan en redes inseguras (WiFi público, internet abierta)
+Problema clave:
+Todo lo que viaja sin cifrado puede ser interceptado
+Ejemplo real
+Un ESP8266 enviando datos por MQTT sin TLS:
+usuario: admin
+password: 1234
+Cualquiera con Wireshark puede verlo
+
+2. ¿Qué signiﬁca “comunicación segura”?
+-
+
+Una comunicación es segura si garantiza:
+Confidencialidad → nadie puede leer los datos
+Integridad → los datos no se alteran
+Autenticación → sabemos con quién hablamos
+
+3. TLS (Transport Layer Security)
+TLS (Transport Layer Security) es el protocolo principal utilizado actualmente para
+proteger las comunicaciones en Internet. Su función es garantizar que los datos
+transmitidos entre dos dispositivos viajen cifrados y seguros, evitando que puedan
+ser interceptados o modificados por terceros durante la comunicación.
+El origen de TLS se remonta a la década de 1990, cuando comenzó a crecer el uso
+comercial de Internet y apareció la necesidad de proteger información sensible,
+especialmente en páginas web y transacciones bancarias. Inicialmente, la empresa
+Netscape desarrolló un protocolo llamado SSL (Secure Sockets Layer), que fue una
+de las primeras tecnologías utilizadas para cifrar comunicaciones en la web.
+Con el tiempo, SSL presentó distintas vulnerabilidades de seguridad y fue
+evolucionando hasta convertirse en TLS, una versión más moderna, robusta y
+segura. Aunque muchas veces todavía se utiliza el término “SSL” de manera
+
+Video 1 — Introducción básica a Wireshark
+4
+
+informal, los sistemas actuales utilizan TLS en sus distintas versiones modernas
+para asegurar las comunicaciones.
+En el mundo IoT, TLS se volvió fundamental debido a que los dispositivos suelen
+transmitir información a través de redes potencialmente inseguras, como Internet
+pública o redes WiFi compartidas. Sensores, alarmas, automatizaciones, dispositivos
+industriales y equipos embebidos envían constantemente datos hacia servidores,
+brokers MQTT o plataformas en la nube. Sin un mecanismo de cifrado adecuado,
+toda esa información podría ser capturada fácilmente por terceros.
+Cuando una conexión utiliza TLS, la información viaja cifrada, impidiendo que un
+atacante pueda leer usuarios, contraseñas, mensajes MQTT o comandos enviados a
+los dispositivos. Además, TLS permite validar la identidad del servidor mediante
+certificados digitales, evitando que un dispositivo IoT se conecte accidentalmente a
+un servidor falso o malicioso.
+Gracias a esto, protocolos originalmente inseguros pueden utilizarse de forma
+segura al combinarse con TLS. Algunos ejemplos muy comunes en IoT son:
+● HTTPS para APIs y paneles web
+● MQTT Seguro (MQTTS) para comunicación con brokers MQTT
+● WebSockets Seguros (WSS) para aplicaciones web en tiempo real
+Actualmente, TLS es una pieza clave en la seguridad de los sistemas IoT modernos,
+ya que permite proteger la comunicación entre microcontroladores, servidores y
+aplicaciones, reduciendo considerablemente los riesgos de espionaje, robo de
+credenciales y manipulación de datos.
+
+4. ¿Cómo funciona TLS?
+Etapas simplificadas:
+a). Handshake (negociación)
+Cliente y servidor:
+- Definen algoritmos de cifrado
+- Intercambian claves públicas
+- Validar certificados
+b). Autenticación: El cliente valida el certificado del servidor
+c). Generación de clave de sesión: Se genera una clave simétrica
+d). Comunicación cifrada: Se usa cifrado simétrico (más rápido)
+
+5. Criptografía híbrida en TLS
+El protocolo TLS utiliza un modelo de criptografía híbrida para lograr un equilibrio
+entre seguridad y rendimiento en las comunicaciones seguras. Este enfoque
+Video 1 — Introducción básica a Wireshark
+5
+
+combina las ventajas de la criptografía asimétrica y la criptografía simétrica dentro
+de una misma conexión.
+Durante la etapa inicial de la comunicación, TLS utiliza criptografía asimétrica para
+realizar el intercambio seguro de claves entre cliente y servidor. Este tipo de
+criptografía trabaja con un par de claves: una pública y una privada. Gracias a este
+mecanismo, el cliente puede verificar la identidad del servidor y generar de manera
+segura las claves que serán utilizadas posteriormente en la sesión de comunicación.
+Aunque este método ofrece un alto nivel de seguridad, también requiere una gran
+cantidad de procesamiento matemático y consume más recursos computacionales.
+Una vez finalizado el intercambio de claves y establecida la conexión segura, TLS
+cambia al uso de criptografía simétrica para la transmisión de datos. En este caso,
+cliente y servidor utilizan una misma clave secreta compartida para cifrar y descifrar
+la información intercambiada. La criptografía simétrica es mucho más rápida y
+eficiente que la asimétrica, lo que permite transmitir grandes volúmenes de datos
+con menor consumo de CPU y menor latencia.
+La principal ventaja de este modelo híbrido es que combina la seguridad de la
+criptografía asimétrica con el alto rendimiento de la criptografía simétrica. De esta
+manera, TLS logra establecer conexiones seguras sin comprometer excesivamente
+la velocidad de comunicación, algo especialmente importante en sistemas IoT y
+dispositivos embebidos con recursos limitados.
+TLS combina:
+-
+
+Asimétrica → para intercambiar claves
+Simétrica → para transmitir datos
+Ventaja:
+
+-
+
+Seguridad + rendimiento
+
+6. Certiﬁcados Digitales
+Los certificados digitales son elementos fundamentales en las comunicaciones
+seguras por Internet y en sistemas IoT que utilizan protocolos protegidos mediante
+TLS. Su función principal es permitir que un cliente pueda verificar la identidad de un
+servidor y establecer una conexión cifrada de manera confiable.
+Un certificado digital contiene diversa información relacionada con la identidad del
+servidor y los mecanismos criptográficos utilizados para la seguridad de la
+comunicación. Entre los datos más importantes se encuentran la clave pública del
+servidor, utilizada para el cifrado y el intercambio seguro de información, y la
+identidad asociada al certificado, como el nombre del dominio o servicio al que
+pertenece.
+
+Video 1 — Introducción básica a Wireshark
+6
+
+Además, el certificado incluye una firma digital generada por una Autoridad
+Certificante (CA – Certificate Authority). Esta entidad actúa como tercero de
+confianza y valida que el dominio o servidor realmente pertenece a quien dice ser.
+Gracias a esta firma digital, el cliente puede comprobar que el certificado no fue
+alterado y que proviene de una fuente confiable.
+Por ejemplo, un servidor identificado como midominio.com puede poseer un
+certificado emitido por una autoridad reconocida como Let's Encrypt. Cuando un
+navegador web o un dispositivo IoT se conecta a ese servidor, verifica
+automáticamente que el certificado haya sido emitido por una CA confiable y que la
+identidad del dominio coincida con el destino solicitado.
+Este mecanismo es esencial para evitar ataques de suplantación de identidad y
+garantizar que la información transmitida viaje de forma segura entre cliente y
+servidor.
+Un certificado contiene:
+-
+
+Clave pública
+Identidad del servidor
+Firma de una CA (Autoridad Certificante)
+Ejemplo:
+Servidor: midominio.com
+Emitido por: Let's Encrypt
+
+7. Protocolos seguros vs. inseguros
+Protocolo
+
+Puerto
+
+Seguridad
+
+HTTP
+
+80
+
+No seguro
+
+HTTPS
+
+443
+
+TLS
+
+MQTT
+
+1883
+
+No seguro
+
+MQTTS
+
+8883
+
+TLS
+
+WS
+
+80
+
+No seguro
+
+WSS
+
+443
+
+TLS
+
+Video 1 — Introducción básica a Wireshark
+7
+
+8. MQTT Seguro (clave para IoT)
+El protocolo MQTT fue diseñado originalmente para ser liviano, simple y eficiente en
+dispositivos con recursos limitados, características que lo convierten en una de las
+tecnologías más utilizadas en sistemas IoT. Sin embargo, en su implementación
+básica, MQTT no incorpora mecanismos de seguridad robustos de forma
+predeterminada. Esto significa que, si no se agregan capas adicionales de
+protección, los datos transmitidos pueden ser interceptados, modificados o incluso
+utilizados por dispositivos no autorizados.
+En una conexión MQTT convencional, la información viaja sin cifrado, permitiendo
+que cualquier equipo ubicado en la misma red o en el trayecto de comunicación
+pueda capturar los mensajes transmitidos. Además, la autenticación básica puede
+resultar insuficiente si no se aplican medidas adicionales de seguridad, aumentando
+el riesgo de accesos indebidos al broker MQTT y a los dispositivos conectados.
+Por esta razón, en aplicaciones IoT modernas se utiliza MQTT Seguro, que
+incorpora diferentes mecanismos de protección orientados a garantizar la
+confidencialidad, autenticación e integridad de la información transmitida. Uno de los
+elementos principales es TLS (Transport Layer Security), encargado de cifrar la
+comunicación entre cliente y broker para evitar que terceros puedan leer o modificar
+los datos intercambiados.
+Además del cifrado, es común implementar autenticación mediante usuario y
+contraseña para controlar qué dispositivos pueden conectarse al sistema. En
+entornos con mayores requerimientos de seguridad, también se utilizan certificados
+digitales para autenticar tanto al servidor como a los clientes MQTT, reduciendo
+significativamente el riesgo de suplantación de identidad y ataques de tipo Man in
+the Middle.
+Gracias a estas medidas, MQTT Seguro permite construir sistemas IoT más
+confiables y resistentes frente a ataques, especialmente en aplicaciones críticas
+como automatización industrial, monitoreo remoto, domótica y sistemas de alarmas
+conectadas.
+MQTT por defecto:
+-
+
+No cifra datos
+No autentica correctamente
+MQTT seguro incluye:
+
+-
+
+TLS
+Usuario/contraseña
+Certificados
+
+Video 1 — Introducción básica a Wireshark
+8
+
+9. Ejemplo práctico
+Para comprender mejor la diferencia entre una comunicación insegura y una
+comunicación protegida, podemos comparar una conexión MQTT convencional con
+una conexión MQTT utilizando TLS en un dispositivo IoT como un ESP8266.
+En una conexión MQTT sin TLS, el dispositivo se conecta directamente al broker
+utilizando únicamente un usuario y contraseña. Toda la información viaja en texto
+plano a través de la red, incluyendo las credenciales de acceso. Esto signiﬁca que
+cualquier persona con acceso al tráﬁco de red podría capturar fácilmente los datos
+utilizando herramientas de análisis como Wireshark.
+Ejemplo de conexión sin TLS:
+client.connect("ESP8266", "admin", "1234");
+En este caso:
+A. El usuario y contraseña viajan sin cifrado
+B. No existe validación de identidad del servidor
+C. La comunicación puede ser interceptada o modiﬁcada
+Para solucionar este problema, MQTT puede utilizar TLS mediante librerías como
+WiFiClientSecure. En este escenario, el dispositivo establece primero una
+conexión cifrada y además valida el certiﬁcado del servidor antes de iniciar la
+comunicación MQTT.
+Ejemplo utilizando TLS:
+WiFiClientSecure client;
+client.setCACert(ca_cert);
+mqttClient.begin(broker, 8883, client);
+En este ejemplo:
+-
+
+WiFiClientSecure habilita la conexión segura mediante TLS
+setCACert() carga el certiﬁcado raíz utilizado para validar al servidor
+El puerto 8883 corresponde al estándar MQTT Seguro (MQTTS)
+
+Gracias a este mecanismo:
+-
+
+Las credenciales viajan cifradas
+Los mensajes MQTT quedan protegidos
+El dispositivo puede veriﬁcar que realmente se está conectando al broker
+correcto
+
+Video 1 — Introducción básica a Wireshark
+9
+
+Este tipo de implementación es actualmente una práctica fundamental en sistemas
+IoT modernos que requieren seguridad y protección de datos en redes públicas o
+Internet.
+
+10. Problemas reales en sistemas embebidos
+10.1 Limitaciones de memoria (RAM)
+En dispositivos como ESP8266:
+-
+
+RAM total: ~50 KB disponibles reales para aplicación
+TLS puede consumir:
+○ 20 KB a 40 KB solo para handshake
+○ buffers de entrada/salida
+○ almacenamiento de certiﬁcados
+Problemas concretos
+
+-
+
+Fallos de conexión TLS por falta de memoria
+Reinicios (WDT reset) durante handshake
+Fragmentación del heap
+Imposibilidad de validar certiﬁcados completos
+Ejemplo real
+Al usar WiFiClientSecure:
+BearSSL::WiFiClientSecure client;
+Internamente:
+-
+
+Se reservan buffers grandes
+Se cargan certiﬁcados en RAM o ﬂash
+
+10.2 Limitaciones de CPU
+Microcontroladores típicos
+-
+
+ESP8266 → 80 MHz (single core)
+ESP32 → 160–240 MHz (dual core según modelo)
+Raspberry Pi Pico W (RP2040) → Dual Core ARM Cortex-M0+ a 133
+MHz
+STM32F407 → ARM Cortex-M4 a 168 MHz
+
+Problema clave
+TLS utiliza operaciones criptográﬁcas computacionalmente costosas:
+Video 1 — Introducción básica a Wireshark
+10
+
+-
+
+RSA (2048 bits) → alto costo computacional
+ECC (Elliptic Curve Cryptography) → más eﬁciente que RSA pero
+igualmente demandante
+SHA-256 → hashing intensivo
+ECDHE → intercambio de claves con alto uso de CPU
+
+Particularidades del RP2040 (Pico W)
+El RP2040 presenta un perﬁl distinto frente a ESP8266/ESP32:
+-
+
+No posee aceleración criptográﬁca por hardware
+CPU Cortex-M0+ (sin FPU ni instrucciones avanzadas de cifrado)
+WiFi delegado al chip CYW43439 (no ejecuta TLS completo)
+TLS se ejecuta en la CPU principal mediante librerías como mbedTLS
+
+Esto implica que:
+-
+
+todo el procesamiento criptográﬁco recae en el RP2040
+mayor uso de CPU durante handshake
+mayor impacto en aplicaciones concurrentes
+necesidad de optimización de buffers y librerías
+
+Particularidades del STM32F407
+El STM32F407 presenta un enfoque más orientado a aplicaciones
+industriales:
+-
+
+CPU Cortex-M4 con FPU (mejor rendimiento en cálculos)
+Soporte de periféricos criptográﬁcos en la familia STM32 (según
+conﬁguración: HASH, RNG, CRYP en variantes)
+No posee conectividad WiFi integrada (requiere módulo externo)
+TLS generalmente implementado con mbedTLS o librerías
+equivalentes
+
+Esto implica que:
+-
+
+mejor rendimiento en operaciones matemáticas frente a RP2040
+posibilidad de acelerar hashing y cifrado en hardware (según uso de
+periféricos)
+menor carga de CPU en comparación con MCU sin aceleración
+mayor complejidad de integración (drivers, middleware, stack de red)
+
+Impacto en sistemas embebidos
+El uso de TLS puede generar:
+-
+
+Handshake lento:
+○ ESP8266: 2–5 s
+○ ESP32: 0.5–1.5 s
+
+Video 1 — Introducción básica a Wireshark
+11
+
+Pico W (RP2040): 1–3 s
+STM32F407: 0.5–2 s (dependiendo de optimización y hardware
+utilizado)
+Bloqueo del loop principal o tareas críticas
+Mayor latencia de conexión
+Degradación del rendimiento en tareas paralelas
+Posibles watchdog reset en diseños no optimizados
+○
+○
+
+-
+
+Consecuencias prácticas
+Durante el handshake TLS:
+-
+
+la CPU queda fuertemente ocupada
+disminuye la capacidad de respuesta del sistema
+se retrasan interrupciones y tareas de tiempo real
+
+En aplicaciones como:
+-
+
+adquisición de sensores en alta frecuencia
+control de actuadores
+sistemas industriales o IoT crítico
+
+puede provocar:
+-
+
+jitter en mediciones
+pérdida de eventos
+comportamiento no determinista
+
+Consideración de diseño
+En Pico W es especialmente importante:
+-
+
+minimizar conexiones TLS
+reutilizar sesiones (keep-alive)
+priorizar ECC sobre RSA
+optimizar buffers de memoria
+
+En STM32F407:
+-
+
+aprovechar periféricos criptográﬁcos cuando estén disponibles
+utilizar RTOS para evitar bloqueos del sistema
+delegar TLS a tareas separadas
+evaluar uso de gateway o proxy seguro en arquitecturas complejas
+
+Video 1 — Introducción básica a Wireshark
+12
+
+ESP8266
+
+ESP32
+
+Raspberry Pico WRP2040
+
+STM32F407
+
+Tabla comparativa de MCU usados en IoT (enfocada en TLS y seguridad)
+
+ESP8266
+
+ESP32
+
+Raspberry Pi Pico
+W (RP2040)
+
+STM32F4 (ej:
+STM32F407)
+
+Xtensa LX106
+
+Xtensa LX6
+(dual core)
+
+ARM Cortex-M0+
+(dual core)
+
+ARM Cortex-M4
+
+80 MHz
+
+160–240
+MHz
+
+133 MHz
+
+168 MHz
+
+Característica
+CPU
+Frecuencia
+RAM disponible
+
+~50 KB usable
+
+~520 KB
+
+264 KB
+
+~192 KB (según
+modelo)
+
+WiFi integrado
+
+Sí
+
+Sí
+
+Sí (chip externo
+CYW43439)
+
+No (requiere
+módulo externo)
+
+Video 1 — Introducción básica a Wireshark
+13
+
+Característica
+
+ESP8266
+
+ESP32
+
+Raspberry Pi Pico
+W (RP2040)
+
+STM32F4 (ej:
+STM32F407)
+
+Aceleración
+criptográﬁca
+
+No
+
+Sí (AES, SHA,
+RSA, ECC)
+
+No
+
+Parcial (AES, SHA,
+RNG en muchos
+modelos)
+
+Librería TLS típica
+
+BearSSL
+
+mbedTLS
+
+mbedTLS
+
+mbedTLS
+
+Handshake TLS
+
+2–5 s
+
+0.5–1.5 s
+
+1–3 s
+
+0.5–2 s
+
+Uso de CPU en TLS
+
+Muy alto
+
+Medio/alto
+
+Alto
+
+Medio
+
+Consumo en
+handshake
+
+Medio
+
+Alto
+
+Medio
+
+Variable (depende
+módulo WiFi)
+
+Estabilidad TLS
+
+Baja/media
+
+Alta
+
+Media
+
+Alta
+
+Soporte multitarea
+
+Limitado
+
+Sí
+(FreeRTOS)
+
+Limitado (sin RTOS
+nativo)
+
+Sí (RTOS
+opcional)
+
+Riesgo WDT reset
+
+Alto
+
+Bajo
+
+Medio
+
+Bajo
+
+Complejidad
+implementación
+
+Baja
+
+Media
+
+Media/alta
+
+Alta
+
+Costo
+
+Muy bajo
+
+Bajo
+
+Bajo
+
+Medio
+
+Uso típico
+
+IoT básico
+
+IoT general
+
+IoT
+educativo/prototipo
+
+IoT industrial
+
+10.3 Complejidad en manejo de certiﬁcados
+La seguridad en TLS se basa principalmente en el uso de certiﬁcados digitales X.509,
+los cuales permiten veriﬁcar la identidad de los servidores y garantizar que la
+comunicación se realiza con un destino legítimo y no con un atacante intermediario.
+Un certiﬁcado de este tipo contiene información fundamental como la clave pública
+del servidor, la ﬁrma digital emitida por una entidad certiﬁcadora y la cadena de
+conﬁanza que conecta el certiﬁcado con una autoridad raíz (Root CA) reconocida por
+el sistema.
+Aunque este mecanismo aporta un alto nivel de seguridad, también introduce una
+complejidad importante en dispositivos IoT y sistemas embebidos. Uno de los
+principales inconvenientes es el tamaño de los certiﬁcados, que habitualmente
+Video 1 — Introducción básica a Wireshark
+14
+
+ocupa entre 1 KB y 2 KB o incluso más. En microcontroladores con memoria RAM y
+almacenamiento limitados, manejar múltiples certiﬁcados puede representar un
+problema signiﬁcativo.
+Además del certiﬁcado principal, el dispositivo suele necesitar almacenar
+certiﬁcados intermedios y certiﬁcados raíz de conﬁanza (CA Root) para poder validar
+correctamente la autenticidad del servidor. Esto aumenta el consumo de memoria y
+complica la administración de los recursos internos del sistema embebido.
+Otro aspecto crítico es la validación de fechas. Para veriﬁcar si un certiﬁcado es
+válido, el dispositivo debe comprobar que no se encuentre vencido y que su período
+de validez sea correcto. Esto obliga al sistema a disponer de una hora y fecha
+precisas, generalmente obtenidas mediante un RTC (Real Time Clock) o mediante
+sincronización NTP por Internet.
+En muchos dispositivos IoT aparece un problema típico: al encenderse, el equipo no
+posee una hora válida porque no tiene RTC o aún no logró sincronizarse con un
+servidor horario. Como consecuencia, el sistema no puede determinar si el
+certiﬁcado está vigente o expirado. El resultado es que la conexión TLS falla, aun
+cuando el certiﬁcado sea correcto, debido a que el proceso de validación no puede
+completarse correctamente.
+Un certiﬁcado X.509 incluye:
+-
+
+Clave pública
+Firma digital
+Cadena de conﬁanza (CA → Root)
+
+Problemas reales:
+-
+
+Tamaño del certiﬁcado (1KB–2KB o más)
+Necesidad de almacenar:
+○ CA root
+○ certiﬁcados intermedios
+Validación de fecha (RTC requerido)
+
+Problema típico en IoT:
+El dispositivo no tiene hora válida
+Resultado:
+-
+
+TLS falla porque no puede validar expiración
+
+10.4 Consumo energético
+La utilización de TLS en dispositivos IoT introduce un costo energético adicional
+debido a las operaciones criptográﬁcas necesarias para establecer y mantener una
+comunicación segura. Durante el proceso de conexión, el microcontrolador debe
+Video 1 — Introducción básica a Wireshark
+15
+
+realizar cálculos matemáticos complejos relacionados con el cifrado, la validación
+de certiﬁcados y el intercambio seguro de claves, lo que genera un mayor uso de
+CPU y, por lo tanto, un incremento en el consumo de energía.
+Además, el establecimiento de una conexión TLS requiere un proceso conocido
+como handshake, en el cual cliente y servidor intercambian múltiples paquetes de
+información antes de comenzar la transmisión de datos reales. Este procedimiento
+aumenta el tiempo de conexión y también incrementa la cantidad de datos
+transmitidos por la red, produciendo un mayor consumo energético tanto en el
+procesamiento como en la comunicación inalámbrica.
+En sistemas IoT alimentados por batería, este impacto puede ser signiﬁcativo. Un
+dispositivo que utiliza conexiones TLS frecuentes o permanentes puede reducir
+considerablemente su autonomía debido al esfuerzo computacional y al uso
+constante del módulo de comunicación WiFi o celular. Por este motivo, en
+aplicaciones IoT de bajo consumo no siempre resulta viable mantener conexiones
+persistentes sin aplicar estrategias de optimización, como reconexiones
+temporizadas, modos de suspensión (deep sleep), reutilización de sesiones TLS o
+transmisión de datos en intervalos especíﬁcos.
+TLS implica:
+-
+
+Mayor uso de CPU
+Mayor tiempo de conexión
+Más transmisión de datos (handshake)
+
+Impacto en IoT:
+-
+
+Dispositivos a batería → se descargan más rápido
+No viable mantener conexiones persistentes sin estrategia
+
+10.5 Latencia de conexión (Handshake TLS)
+El establecimiento de una conexión segura mediante TLS introduce una latencia
+inicial superior en comparación con una conexión no cifrada. Esto ocurre porque,
+antes de comenzar el intercambio de datos útiles, cliente y servidor deben ejecutar
+un proceso de negociación denominado TLS Handshake. Durante esta etapa se
+realizan múltiples intercambios de información entre ambas partes (round-trips),
+permitiendo acordar los algoritmos de cifrado, intercambiar claves criptográﬁcas y
+validar la autenticidad de los certiﬁcados digitales utilizados en la comunicación.
+Cada una de estas etapas agrega tiempo adicional al inicio de la conexión,
+especialmente en redes con alta latencia o en dispositivos IoT con capacidad de
+procesamiento limitada. Además, la validación de certiﬁcados y las operaciones
+criptográﬁcas requieren recursos computacionales adicionales que incrementan aún
+más el tiempo necesario para completar la conexión segura.
+
+Video 1 — Introducción básica a Wireshark
+16
+
+Como resultado, las conexiones TLS presentan una latencia inicial más elevada, lo
+que puede afectar negativamente aplicaciones que necesitan respuestas inmediatas
+o que realizan conexiones cortas y repetitivas de manera constante. En entornos IoT,
+donde muchos dispositivos transmiten pequeños volúmenes de datos en intervalos
+breves, este comportamiento puede generar ineﬁciencias tanto en rendimiento como
+en consumo energético. Por esta razón, suele ser recomendable mantener
+conexiones persistentes cuando sea posible o utilizar mecanismos de reutilización
+de sesión para reducir el costo del handshake en conexiones sucesivas.
+Un handshake completo implica:
+-
+
+Múltiples round-trips
+Intercambio de claves
+Validación de certiﬁcados
+
+Resultado:
+-
+
+Latencia inicial alta
+No apto para conexiones cortas repetidas
+
+10.6 Soluciones técnicas aplicadas
+A. Uso de criptografía eﬁciente (ECC vs RSA)
+En sistemas IoT y dispositivos embebidos es importante utilizar algoritmos criptográﬁcos
+que ofrezcan un buen nivel de seguridad con el menor consumo posible de recursos. Por
+este motivo, actualmente muchos sistemas modernos preﬁeren utilizar ECC (Elliptic Curve
+Cryptography) en lugar de RSA.
+La criptografía RSA fue ampliamente utilizada durante muchos años, pero requiere claves de
+gran tamaño y una mayor capacidad de procesamiento. En cambio, ECC logra un nivel de
+seguridad equivalente utilizando claves mucho más pequeñas.
+Ejemplo:
+-
+
+RSA 2048 bits → mayor consumo de recursos
+ECC 256 bits → nivel de seguridad similar con menor carga computacional
+
+Gracias a esto, ECC ofrece varias ventajas importantes en dispositivos IoT:
+-
+
+Menor uso de CPU
+Menor consumo de memoria RAM
+Handshake TLS más rápido
+Menor consumo energético
+
+Estas características hacen que ECC sea especialmente útil en microcontroladores como:
+-
+
+ESP8266
+ESP32
+
+donde los recursos de hardware son limitados y la eﬁciencia energética resulta fundamental.
+
+Video 1 — Introducción básica a Wireshark
+17
+
+Uso preferente de ECC (Elliptic Curve Cryptography)
+Ejemplo:
+-
+
+RSA 2048 → pesado
+ECC 256 → mismo nivel de seguridad con menos recursos
+
+-
+
+Menor uso de CPU
+Menor consumo de RAM
+Handshake más rápido
+
+Beneﬁcio:
+
+B. Certiﬁcados optimizados
+
+Estrategias:
+-
+
+Usar solo el CA root necesario
+Evitar cadenas largas de certiﬁcados
+Almacenar certiﬁcados en ﬂash (PROGMEM)
+
+client.setCACert(ca_cert);
+C. Reutilización de conexiones (Keep Alive)
+
+En MQTT:
+mqttClient.setKeepAlive(60);
+Beneﬁcio:
+-
+
+Evita múltiples handshakes
+Reduce consumo de CPU
+Mejora eﬁciencia energética
+
+D. Sesiones TLS reutilizables
+
+Algunas librerías permiten:
+-
+
+Session resumption
+TLS tickets
+
+Evita handshake completo en reconexiones
+E. Optimización de buffers
+En ESP8266 (BearSSL):
+
+client.setBufferSizes(512, 512);
+Ajuste clave:
+Reducir buffers sin romper comunicación
+Video 1 — Introducción básica a Wireshark
+18
+
+F. Uso de PSK (Pre-Shared Key)
+
+Alternativa a certiﬁcados:
+-
+
+Clave compartida entre cliente y servidor
+
+Ventajas:
+-
+
+Menor uso de RAM
+Sin certiﬁcados
+Handshake más liviano
+
+Desventaja:
+-
+
+Menor escalabilidad
+Gestión de claves más compleja
+
+G. Sincronización de hora (CRÍTICO)
+
+Solución típica:
+-
+
+NTP al iniciar el dispositivo
+
+conﬁgTime(0, 0, "pool.ntp.org");
+Sin esto:
+TLS falla en validación de certiﬁcados
+H. Oﬄoading de seguridad
+
+En sistemas más complejos usar chips externos
+
+Característica
+
+ATECC608A
+
+ATECC608B
+
+OPTIGA
+Trust M
+
+SE050
+
+STSAFE-A110
+
+A71CH
+
+Fabricante
+
+Microchip
+
+Microchip
+
+Inﬁneon
+
+NXP
+
+STMicroelectronic
+s
+
+NXP
+
+Interfaz principal
+
+I2C
+
+I2C
+
+I2C
+
+I2C
+
+I2C
+
+I2C
+
+Tipo
+
+Secure
+Element
+
+Secure
+Element
+
+Secure
+Element
+
+Secure
+Element
+avanzado
+
+Secure Element
+
+Secure
+Element
+
+ECC
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+RSA
+
+No
+
+No
+
+Sí
+
+Sí
+
+No
+
+Limitado
+
+Video 1 — Introducción básica a Wireshark
+19
+
+Característica
+
+ATECC608A
+
+ATECC608B
+
+OPTIGA
+Trust M
+
+SE050
+
+STSAFE-A110
+
+A71CH
+
+AES
+
+Limitado
+
+Mejorado
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Certiﬁcados
+X.509
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Secure Boot
+
+Básico
+
+Avanzado
+
+Sí
+
+Sí
+
+Sí
+
+No
+
+Anti-clonación
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Compatible AWS
+IoT
+
+Excelente
+
+Excelente
+
+Muy
+bueno
+
+Muy bueno
+
+Bueno
+
+Bueno
+
+Compatible
+Azure IoT
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Sí
+
+Nivel industrial
+
+Medio
+
+Medio/alto
+
+Alto
+
+Muy alto
+
+Alto
+
+Medio
+
+Complejidad de
+uso
+
+Baja
+
+Baja
+
+Media
+
+Alta
+
+Media
+
+Baja
+
+Librerías para
+ESP32
+
+Muy buenas
+
+Muy buenas
+
+Buenas
+
+Más
+complejas
+
+Buenas
+
+Buenas
+
+Ideal para
+
+Makers +
+IoT
+
+Productos
+comerciales
+
+Industria
+
+Productos
+premium
+
+STM32 industrial
+
+IoT
+económico
+
+Consumo
+energético
+
+Muy bajo
+
+Muy bajo
+
+Bajo
+
+Medio
+
+Bajo
+
+Muy bajo
+
+Costo
+aproximado
+
+Bajo
+
+Bajo/medio
+
+Medio
+
+Alto
+
+Medio
+
+Bajo
+
+Curva de
+aprendizaje
+
+Fácil
+
+Fácil
+
+Media
+
+Alta
+
+Media
+
+Fácil
+
+Beneﬁcios:
+-
+
+Almacena claves de forma segura
+Acelera operaciones criptográﬁcas
+Reduce carga del MCU
+
+Video 1 — Introducción básica a Wireshark
+20
+
+I. Estrategias de arquitectura
+
+En lugar de TLS directo desde el dispositivo:
+-
+
+Gateway intermedio (Edge device)
+Proxy seguro (ej: Nginx, Mosquitto TLS)
+
+Ejemplo:
+ESP8266 → MQTT sin TLS (LAN segura) → Gateway → TLS → Cloud
+Conclusión técnica
+En sistemas embebidos:
+TLS no es trivial
+Requiere optimización consciente
+El desafío real no es “activar TLS”, sino:
+- Hacerlo viable en hardware limitado
+- Mantener estabilidad
+- No romper el tiempo real del sistema
+
+11. Ataques evitados con TLS
+La implementación de TLS en las comunicaciones de red permite proteger los datos
+transmitidos frente a diversos tipos de ataques comunes en Internet y en entornos
+IoT. Gracias al cifrado, autenticación y verificación de integridad que proporciona
+este protocolo, es posible reducir significativamente los riesgos asociados a la
+interceptación y manipulación de información.
+Uno de los ataques más frecuentes que TLS ayuda a evitar es el sniffing o captura
+de datos. En conexiones sin cifrado, cualquier atacante conectado a la misma red
+puede utilizar herramientas de monitoreo para visualizar la información transmitida,
+incluyendo usuarios, contraseñas, mensajes MQTT o datos sensibles del sistema.
+TLS cifra toda la comunicación, impidiendo que terceros puedan interpretar el
+contenido capturado.
+Otro ataque importante es el denominado Man-in-the-Middle (MitM). En este
+escenario, un atacante intenta colocarse entre el cliente y el servidor para interceptar
+o modificar la comunicación sin que ninguna de las partes lo detecte. TLS reduce
+este riesgo mediante el uso de certificados digitales y mecanismos de autenticación
+que permiten verificar la identidad real del servidor antes de establecer la conexión.
+Además, TLS protege contra el robo de credenciales, ya que usuarios, contraseñas
+y tokens de autenticación viajan cifrados a través de la red. Esto dificulta
+
+Video 1 — Introducción básica a Wireshark
+21
+
+enormemente que un atacante pueda obtener información sensible mediante
+técnicas de escucha o interceptación de tráfico.
+Finalmente, TLS también garantiza la integridad de los datos transmitidos, evitando
+la modificación de mensajes durante la comunicación. Si un paquete es alterado por
+un tercero, los mecanismos de verificación criptográfica permiten detectar la
+manipulación y descartar la información comprometida.
+Gracias a estas características, TLS se ha convertido en un componente esencial
+para asegurar aplicaciones web, servicios en la nube y sistemas IoT modernos.
+-
+
+Sniffing (captura de datos)
+Man-in-the-Middle
+Robo de credenciales
+Modificación de mensajes
+
+12. Buenas prácticas
+-
+
+Nunca usar MQTT sin TLS en producción
+Validar certificados
+No hardcodear credenciales
+Usar puertos seguros
+Implementar autenticación adicional
+
+13. Actividad práctica — MQTT, TLS y análisis de tráﬁco con Wireshark
+Introducción
+En esta actividad los estudiantes deberán implementar una arquitectura IoT
+completa utilizando:
+1. Microcontroladores ESP32 (o equivalente)
+2. Protocolo MQTT
+3. Broker MQTT en contenedor Docker
+4. Seguridad TLS
+5. Análisis de tráﬁco mediante Wireshark
+El objetivo principal será comprender:
+A. cómo funciona MQTT
+B. cómo viajan los datos en la red
+C. cuáles son los riesgos de seguridad de MQTT sin cifrado
+D. cómo TLS protege las comunicaciones IoT
+
+Video 1 — Introducción básica a Wireshark
+22
+
+Material introductorio recomendado
+Video 1 — Introducción básica a Wireshark
+Tutorial Básico de Wireshark
+Video 2 — Captura y análisis de paquetes
+Curso Wireshark Fundamentos
+Video 3 — Introducción práctica a protocolos de red
+Wireshark para principiantes en español
+
+Requisitos generales de la práctica
+a). Desarrollo del cliente IoT
+Cada alumno deberá desarrollar un firmware para:
+-
+
+ESP32
+ESP8266
+STM32 con WiFi
+Raspberry Pi Pico W
+u otro microcontrolador con conectividad ip.
+
+El firmware deberá:
+-
+
+conectarse a una red WiFi
+conectarse a un broker MQTT
+autenticarse mediante usuario y contraseña
+publicar datos periódicamente
+
+b) Construcción del broker MQTT
+Cada alumno deberá implementar un broker MQTT utilizando Docker.
+Podrán utilizar cualquiera de los siguientes brokers:
+-
+
+Mosquitto
+EMQX
+HiveMQ
+
+El broker deberá ejecutarse dentro de un contenedor Docker y exponer los puertos
+necesarios para las pruebas.
+Video 1 — Introducción básica a Wireshark
+23
+
+Puertos sugeridos:
+Servicio
+
+Tipo conexión
+
+Puerto
+
+MQTT sin TLS
+
+mqtt
+
+1883
+
+MQTT seguro TLS
+
+mqtts
+
+8883
+
+WebSockets MQTT
+
+ws
+
+9001
+
+WebSockets MQTT
+TLS
+
+wss
+
+9091
+
+C) Generación de datos IoT
+El dispositivo deberá publicar:
+-
+
+temperatura aleatoria
+periódicamente
+utilizando jitter aleatorio
+Parámetros requeridos
+Parámetro
+
+Valor
+
+Variable
+
+Temperatura
+
+Tipo de dato
+
+Float
+
+Intervalo de envío
+
+Aleatorio
+
+Jitter
+
+Entre 2 y 9 segundos
+
+Topic sugerido
+
+sensores/temperatura
+
+QoS sugerido
+
+0o1
+
+Ejemplo de payload JSON:
+{
+"device":"esp32_lab",
+"temperature":24.7,
+"timestamp":1710000000
+}
+
+Video 1 — Introducción básica a Wireshark
+24
+
+Ejercicio 1
+Analizar tráfico MQTT sin TLS utilizando Wireshark
+Objetivos
+-
+
+Capturar paquetes MQTT.
+Identificar mensajes CONNECT y PUBLISH.
+Observar cómo viajan usuario y contraseña sin cifrado.
+Comprender los riesgos de utilizar MQTT sin TLS.
+
+Requisitos
+-
+
+Broker MQTT funcionando en puerto 1883.
+Cliente ESP32 conectado sin TLS.
+Publicación periódica de temperatura.
+
+Filtros sugeridos:
+
+mqtt o tcp.port == 1883
+
+Actividades
+1. Capturar tráfico MQTT.
+2. Identificar:
+○ CONNECT
+○ CONNACK
+○ PUBLISH
+○ SUBSCRIBE
+3. Localizar:
+○ usuario MQTT
+○ contraseña MQTT
+○ payload enviado
+4. Realizar capturas de pantalla evidenciando:
+○ credenciales
+○ topics
+○ payloads visibles
+
+Ejercicio 2
+Configurar comunicación MQTT segura
+Configurar
+-
+
+Broker MQTT con TLS.
+Cliente ESP32 seguro mediante certificados.
+
+Objetivos
+Video 1 — Introducción básica a Wireshark
+25
+
+-
+
+Implementar cifrado TLS.
+Analizar diferencias respecto al tráfico no cifrado.
+Verificar el handshake TLS en Wireshark.
+
+Requisitos
+-
+
+Broker TLS funcionando en puerto 8883.
+Certificados válidos.
+Cliente ESP32 utilizando TLS.
+
+Filtros sugeridos: tls o tcp.port == 8883
+Actividades
+1. Configurar certificados TLS.
+2. Conectar ESP32 mediante MQTT seguro.
+3. Capturar tráfico TLS.
+4. Identificar:
+○ Client Hello
+○ Server Hello
+○ intercambio de certificados
+5. Verificar que:
+○ no pueden visualizarse credenciales
+○ no puede visualizarse el payload MQTT
+
+Ejercicio 3
+Comparación entre MQTT con y sin TLS. Comparar
+Parámetro
+
+MQTT sin TLS
+
+MQTT con TLS
+
+Latencia
+Consumo de RAM
+Uso de CPU
+Tamaño de paquetes
+Seguridad
+Exposición de credenciales
+Exposición de payload
+Analizar
+
+Video 1 — Introducción básica a Wireshark
+26
+
+-
+
+Diferencias visibles en Wireshark.
+Información expuesta en MQTT sin TLS.
+Protección ofrecida por TLS.
+Impacto del cifrado en sistemas embebidos.
+
+Preguntas de análisis
+1. ¿Qué información puede verse en MQTT sin TLS?
+(Incluir capturas de pantalla)
+2. ¿Por qué TLS protege las credenciales?
+3. ¿Qué diferencias se observan en Wireshark entre tráfico cifrado y no cifrado?
+4. ¿Qué impacto tiene TLS sobre el rendimiento del sistema?
+5. ¿Por qué es importante utilizar TLS en dispositivos IoT conectados a Internet?
+6. ¿Qué riesgos existen al utilizar MQTT sin cifrado en una red pública?
+7. ¿Qué ventajas aporta TLS en sistemas IoT industriales?
+
+Entregables
+Cada alumno deberá presentar:
+-
+
+Código fuente del firmware.(Captura con snapCode en vscode)
+Configuración Docker del broker MQTT.(docker compose o docker file)
+Configuración del broker utilizado
+Capturas de Wireshark.
+Certificados utilizados.
+Informe técnico en PDF.
+Conclusiones finales del análisis comparativo.
+
+14. Resumen de la clase
+Idea clave: No existe IoT seguro sin comunicación segura.
+TLS no es opcional: es obligatorio en cualquier sistema real.
+
+Referencias Bibliográﬁcas
+EMQX. (s.f.).
+EMQX Documentation (oﬁcial).
+https://docs.emqx.com/en/
+EMQX. (s.f.).
+MQTT Guide – Beginner to Advanced.
+Video 1 — Introducción básica a Wireshark
+27
+
+https://www.emqx.com/en/mqtt-guide
+EMQX. (s.f.).
+MQTT Basics.
+https://docs.emqx.com/en/emqx/latest/design/mqtt-basics.html
+EMQX. (s.f.).
+Security Guide.
+https://docs.emqx.com/en/emqx/latest/access-control/security-guide.html
+HiveMQ. (s.f.).
+MQTT Essentials – A Lightweight IoT Protocol.
+https://www.hivemq.com/mqtt-essentials/
+Eclipse Mosquitto. (s.f.).
+Eclipse Mosquitto Documentation.
+https://mosquitto.org/documentation/
+Eclipse Foundation. (s.f.).
+Mosquitto MQTT Broker – Getting Started Guide.
+https://mosquitto.org/man/mosquitto-8.html
+OWASP Foundation. (2023).
+OWASP Internet of Things Top 10.
+https://owasp.org/www-project-internet-of-things/
+
+Video 1 — Introducción básica a Wireshark
+28
+
+
