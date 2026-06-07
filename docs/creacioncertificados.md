@@ -31,10 +31,10 @@ Se utiliza una **PKI (Public Key Infrastructure)** de ámbito local auto-gestion
 
 TLS combina dos tipos de criptografía en una misma conexión:
 
-| Fase | Tipo de cifrado | Propósito | Algoritmo típico |
-|---|---|---|---|
-| Handshake | **Asimétrica** | Intercambio seguro de claves + validación de identidad | RSA 2048 bits |
-| Datos | **Simétrica** | Transmisión rápida de mensajes | AES (128/256 bits) |
+| Fase      | Tipo de cifrado | Propósito                                              | Algoritmo típico   |
+| --------- | --------------- | ------------------------------------------------------ | ------------------ |
+| Handshake | **Asimétrica**  | Intercambio seguro de claves + validación de identidad | RSA 2048 bits      |
+| Datos     | **Simétrica**   | Transmisión rápida de mensajes                         | AES (128/256 bits) |
 
 **Ventaja:** se obtiene la seguridad del cifrado asimétrico (intercambio de claves sin compartir secretos previos) con la velocidad del cifrado simétrico (ideal para microcontroladores con recursos limitados).
 
@@ -43,6 +43,7 @@ TLS combina dos tipos de criptografía en una misma conexión:
 Un certificado X.509 es un documento electrónico que asocia una **clave pública** con una **identidad** (dominio, organización, etc.) y está **firmado digitalmente** por una Autoridad Certificante (CA).
 
 **Contenido principal de un certificado:**
+
 - Clave pública del sujeto (titular)
 - Nombre del sujeto (Common Name, CN)
 - Nombre del emisor (CA que lo firmó)
@@ -104,6 +105,7 @@ Certificate:
 ```
 
 **Características:**
+
 - **Sujeto (Subject):** `CN = ISPC_CA`
 - **Emisor (Issuer):** `CN = ISPC_CA` (autofirmado, raíz de confianza)
 - **Validez:** 365 días (15/05/2026 → 15/05/2027)
@@ -134,6 +136,7 @@ Certificate:
 ```
 
 **Características:**
+
 - **Sujeto (Subject):** `CN = mqtt.local`
 - **Emisor (Issuer):** `CN = ISPC_CA` (firmado por la CA raíz)
 - **Validez:** 365 días (15/05/2026 → 15/05/2027)
@@ -237,20 +240,20 @@ openssl ca -selfsign -keyfile ca.key -cert ca.crt \
   -out ca.crt -in ca.csr -config demoCA/ca.conf -batch
 ```
 
-| Parámetro | Significado |
-|---|---|
-| `req -new` | Genera un Certificate Signing Request |
-| `-key ca.key` | Clave privada de la CA |
-| `-out ca.csr` | CSR generado |
-| `-subj "/CN=ISPC_CA"` | Sujeto: Common Name = `ISPC_CA` |
-| `ca -selfsign` | Autofirma el CSR (se convierte en CA raíz) |
-| `-keyfile ca.key` | Clave privada para firmar |
+| Parámetro                    | Significado                                  |
+| ---------------------------- | -------------------------------------------- |
+| `req -new`                   | Genera un Certificate Signing Request        |
+| `-key ca.key`                | Clave privada de la CA                       |
+| `-out ca.csr`                | CSR generado                                 |
+| `-subj "/CN=ISPC_CA"`        | Sujeto: Common Name = `ISPC_CA`              |
+| `ca -selfsign`               | Autofirma el CSR (se convierte en CA raíz)   |
+| `-keyfile ca.key`            | Clave privada para firmar                    |
 | `-startdate 20260515000000Z` | Fecha de inicio de validez (15 de mayo 2026) |
-| `-enddate 20270515000000Z` | Fecha de fin de validez (15 de mayo 2027) |
-| `-config demoCA/ca.conf` | Archivo de configuración de la CA |
-| `-batch` | Sin preguntas interactivas |
+| `-enddate 20270515000000Z`   | Fecha de fin de validez (15 de mayo 2027)    |
+| `-config demoCA/ca.conf`     | Archivo de configuración de la CA            |
+| `-batch`                     | Sin preguntas interactivas                   |
 
-**Nota:** Se usa `openssl ca` en lugar del simple `openssl req -new -x509` porque este último no permite especificar la fecha de inicio (`-startdate`). La opción `-startdate` y `-enddate` del comando `openssl ca` permite generar certificados con fechas retroactivas o futuras arbitrarias, útil para entornos de laboratorio o pruebas.
+**Nota:** Se usa `openssl ca` en lugar del simple `openssl req -new -x509` porque este último no permite especificar la fecha de inicio (`-startdate`). La opción `-startdate` y `-enddate` del comando `openssl ca` permite generar certificados con fechas retroactivas o futuras arbitrarias, **útil para entornos de laboratorio o pruebas**.
 
 **Nota adicional:** Se usa solo `CN` sin `O` (organización) ni `C` (país) porque es una CA de laboratorio/educativa. En producción se incluirían más campos.
 
@@ -276,6 +279,7 @@ openssl req -new -key server.key -out server.csr \
 - `-subj "/CN=mqtt.local"` — Common Name = `mqtt.local` (nombre DNS del broker)
 
 **El CSR contiene:**
+
 - La clave pública del servidor (extraída de `server.key`)
 - El nombre del sujeto (`CN=mqtt.local`)
 - La solicitud firmada con la clave privada del servidor (prueba de posesión)
@@ -290,26 +294,28 @@ openssl ca -startdate 20260515000000Z -enddate 20270515000000Z \
   -extfile <(printf "subjectAltName=DNS:mqtt.local,IP:192.168.100.19")
 ```
 
-| Parámetro | Significado |
-|---|---|
-| `ca` | Comando de Autoridad Certificante de OpenSSL |
-| `-startdate 20260515000000Z` | Fecha de inicio de validez (15/05/2026) |
-| `-enddate 20270515000000Z` | Fecha de fin de validez (15/05/2027) |
-| `-keyfile ca.key` | Clave privada de la CA para firmar |
-| `-cert ca.crt` | Certificado de la CA (autoridad firmante) |
-| `-in server.csr` | CSR del servidor a firmar |
-| `-out server.crt` | Certificado firmado resultante |
-| `-config demoCA/ca.conf` | Configuración de la base de datos de la CA |
-| `-batch` | Sin preguntas interactivas |
-| `-extfile <(...)` | Extensiones X.509 adicionales (SAN) |
+| Parámetro                    | Significado                                  |
+| ---------------------------- | -------------------------------------------- |
+| `ca`                         | Comando de Autoridad Certificante de OpenSSL |
+| `-startdate 20260515000000Z` | Fecha de inicio de validez (15/05/2026)      |
+| `-enddate 20270515000000Z`   | Fecha de fin de validez (15/05/2027)         |
+| `-keyfile ca.key`            | Clave privada de la CA para firmar           |
+| `-cert ca.crt`               | Certificado de la CA (autoridad firmante)    |
+| `-in server.csr`             | CSR del servidor a firmar                    |
+| `-out server.crt`            | Certificado firmado resultante               |
+| `-config demoCA/ca.conf`     | Configuración de la base de datos de la CA   |
+| `-batch`                     | Sin preguntas interactivas                   |
+| `-extfile <(...)`            | Extensiones X.509 adicionales (SAN)          |
 
 **Explicación de la extensión SAN (Subject Alternative Name):**
 
 La línea `printf "subjectAltName=DNS:mqtt.local,IP:192.168.100.19"` agrega una extensión crítica que le dice al cliente:
+
 - "Este certificado es válido para el nombre de host `mqtt.local`"
 - "Este certificado también es válido para la dirección IP `192.168.100.19`"
 
 **¿Por qué es necesaria esta extensión?**
+
 - Los navegadores modernos y librerías TLS **ignoran el Common Name (CN)** para la validación de identidad; solo usan las SAN
 - El ESP32 se conecta a una **IP fija** (`192.168.100.19`) y no a un nombre DNS
 - Sin incluir `IP:192.168.100.19` en las SAN, la validación TLS fallaría porque el CN `mqtt.local` no coincide con la IP de conexión
@@ -330,14 +336,14 @@ Todos los archivos están en formato **PEM (Privacy Enhanced Mail)**, que es tex
 
 ### 5.2. Tamaños típicos
 
-| Archivo | Tamaño aprox. | Contenido |
-|---|---|---|
-| `ca.key` | ~1.7 KB | Clave privada RSA 2048 en PEM |
-| `ca.crt` | ~3.6 KB | Certificado X.509 v3 en PEM |
-| `ca.srl` | ~0 bytes (no usado) | Serial gestionado via `demoCA/serial` |
-| `server.key` | ~1.7 KB | Clave privada RSA 2048 en PEM |
-| `server.csr` | ~0.9 KB | CSR en PEM |
-| `server.crt` | ~4.1 KB | Certificado X.509 v3 con SAN en PEM |
+| Archivo      | Tamaño aprox.       | Contenido                             |
+| ------------ | ------------------- | ------------------------------------- |
+| `ca.key`     | ~1.7 KB             | Clave privada RSA 2048 en PEM         |
+| `ca.crt`     | ~3.6 KB             | Certificado X.509 v3 en PEM           |
+| `ca.srl`     | ~0 bytes (no usado) | Serial gestionado via `demoCA/serial` |
+| `server.key` | ~1.7 KB             | Clave privada RSA 2048 en PEM         |
+| `server.csr` | ~0.9 KB             | CSR en PEM                            |
+| `server.crt` | ~4.1 KB             | Certificado X.509 v3 con SAN en PEM   |
 
 ### 5.3. Ubicación en el contenedor Docker
 
@@ -368,6 +374,7 @@ Esto configura el **listener SSL** en el puerto **8883** para que use `server.ke
 **Archivo:** `firmware_ej1_sintls/src/main.cpp`
 
 **Conexión:**
+
 ```cpp
 WiFiClient espClient;               // Cliente TCP simple (SIN cifrado)
 PubSubClient client(espClient);     // MQTT sobre TCP plano
@@ -376,6 +383,7 @@ client.setServer(MQTT_BROKER, 1883); // Puerto 1883 (MQTT no seguro)
 ```
 
 **Flujo de datos:**
+
 ```
 ESP32 ──WiFiClient (TCP)──> EMQX :1883
          │
@@ -386,6 +394,7 @@ ESP32 ──WiFiClient (TCP)──> EMQX :1883
 ```
 
 **En Wireshark (filtro: `mqtt` o `tcp.port == 1883`):**
+
 - Se ve el paquete CONNECT con usuario y contraseña legibles
 - Se ve el paquete PUBLISH con el JSON de temperatura completo
 - **No hay protección alguna**
@@ -395,6 +404,7 @@ ESP32 ──WiFiClient (TCP)──> EMQX :1883
 **Archivo:** `firmware_ej2_contls/src/main.cpp`
 
 **Conexión:**
+
 ```cpp
 #include <WiFiClientSecure.h>
 
@@ -406,6 +416,7 @@ client.setServer(MQTT_BROKER, 8883);      // Puerto 8883 (MQTT seguro)
 ```
 
 **Flujo de datos:**
+
 ```
 ESP32 ──WiFiClientSecure (TLS)──> EMQX :8883
          │
@@ -417,6 +428,7 @@ ESP32 ──WiFiClientSecure (TLS)──> EMQX :8883
 ```
 
 **En Wireshark (filtro: `tcp.port == 8883`):**
+
 - Se ve el handshake TLS (Client Hello, Server Hello, Certificate, etc.)
 - Los mensajes MQTT aparecen como `TLS Application Data` cifrados
 - **No es posible** leer credenciales ni payload
@@ -429,22 +441,22 @@ El handshake TLS 1.2 es el proceso de negociación que ocurre ANTES de que cualq
 
 ```
 CLIENTE (ESP32)                        SERVIDOR (EMQX)
-      |                                      |
+      |                                       |
       |  1. Client Hello                      |
       |  ──────────────────────────────────>  |
       |  (versiones TLS, cipher suites sop.)  |
-      |                                      |
+      |                                       |
       |  2. Server Hello                      |
       |  <──────────────────────────────────  |
       |  (versión TLS elegida, cipher suite)  |
-      |                                      |
+      |                                       |
       |  3. Certificate                       |
       |  <──────────────────────────────────  |
       |  (server.crt completo + cadena)       |
-      |                                      |
+      |                                       |
       |  4. Server Hello Done                 |
       |  <──────────────────────────────────  |
-      |                                      |
+      |                                       |
       |  ▼ Validación del certificado:        |
       |    • ¿Firmado por ISPC_CA?            |
       |      → Extrae clave pública de ca_cert|
@@ -453,42 +465,42 @@ CLIENTE (ESP32)                        SERVIDOR (EMQX)
       |      → Requiere hora sincronizada NTP |
       |    • ¿SAN contiene "mqtt.local"       |
       |        o IP:192.168.100.19?           |
-      |                                      |
+      |                                       |
       |  5. Client Key Exchange               |
       |  ──────────────────────────────────>  |
       |  (pre-master secret cifrado con       |
       |   clave pública del servidor)         |
-      |                                      |
+      |                                       |
       |  6. Change Cipher Spec                |
       |  ──────────────────────────────────>  |
       |  (a partir de aquí, el cliente        |
       |   enviará cifrado)                    |
-      |                                      |
+      |                                       |
       |  7. Finished (cliente)                |
       |  ──────────────────────────────────>  |
       |  (primer mensaje cifrado con clave    |
       |   de sesión)                          |
-      |                                      |
+      |                                       |
       |  8. Change Cipher Spec                |
       |  <──────────────────────────────────  |
       |  (a partir de aquí, el servidor       |
       |   enviará cifrado)                    |
-      |                                      |
+      |                                       |
       |  9. Finished (servidor)               |
       |  <──────────────────────────────────  |
-      |                                      |
+      |                                       |
   ════════════════════════════════════════════════════
   SESIÓN TLS ESTABLECIDA — TODO CIFRADO CON AES
   ════════════════════════════════════════════════════
-      |                                      |
+      |                                       |
       |  MQTT CONNECT (cifrado)               |
       |  ──────────────────────────────────>  |
       |  ("alumno_ispc", "secreto_mqtt_123")  |
-      |                                      |
+      |                                       |
       |  MQTT PUBLISH (cifrado)               |
       |  ──────────────────────────────────>  |
       |  ("sensores/temperatura", JSON)       |
-      |                                      |
+      |                                       |
 ```
 
 ### 7.1. Detalle de la validación del certificado (paso 4)
@@ -502,12 +514,14 @@ El ESP32, gracias a `setCACert(ca_cert)`, realiza estas comprobaciones:
 ### 7.2. Intercambio de claves (paso 5)
 
 En RSA (el método usado aquí):
+
 1. El ESP32 genera un número aleatorio llamado **pre-master secret**
 2. Lo cifra con la **clave pública del servidor** (extraída de `server.crt`)
 3. Solo el servidor (que tiene `server.key`, la clave privada correspondiente) puede descifrarlo
 4. Ambas partes usan el pre-master secret para derivar las **claves de sesión simétricas**
 
 En ECDHE (alternativa más moderna no usada aquí):
+
 - Se usa Diffie-Hellman sobre curvas elípticas
 - Aporta **Perfect Forward Secrecy (PFS)**: si la clave privada del servidor se compromete en el futuro, las sesiones pasadas no pueden descifrarse
 
@@ -581,12 +595,14 @@ public:
 ### 9.1. ¿Por qué es necesaria?
 
 **El problema:**
+
 - El certificado del servidor tiene `CN = mqtt.local` (nombre DNS, no IP)
 - El ESP32 se conecta a `192.168.100.19` (porque en una LAN no hay DNS que resuelva `mqtt.local`)
 - La validación TLS por defecto compara el `host` de conexión con el CN/SAN del certificado
 - Si te conectas por IP pero el certificado dice `mqtt.local`, la validación **falla**
 
 **La solución:**
+
 - Esta clase sobreescribe `connect()` para:
   1. Convertir la IP string a objeto `IPAddress`
   2. Llamar al método `WiFiClientSecure::connect(ip, port, "mqtt.local", ...)` que:
@@ -635,15 +651,18 @@ esperarSincronizacionHora();
 ### 10.1. ¿Por qué es necesario?
 
 La validación TLS requiere verificar que la fecha actual esté dentro del rango de validez del certificado:
+
 - `Not Before: May 15 00:00:00 2026`
 - `Not After: May 15 00:00:00 2027`
 
 **Problema típico en IoT:**
+
 - Al encender un ESP32, la hora interna es `0` (1 de enero de 1970, época Unix)
 - Si se intenta la conexión TLS inmediatamente, la fecha `1970` está fuera del rango de validez del certificado
 - TLS falla con error de validación aunque el certificado sea correcto
 
 **Solución:**
+
 - `configTime()` inicia la sincronización NTP con `pool.ntp.org`
 - El bucle `while (now < 24*3600)` espera **bloqueando** hasta que el tiempo Unix supere las 24 horas (es decir, se haya recibido la hora real de NTP)
 - Solo entonces se permite que `reconnect()` intente la conexión TLS
@@ -687,6 +706,7 @@ openssl verify -CAfile ca.crt server.crt
 ```
 
 Salida esperada:
+
 ```
 server.crt: OK
 ```
@@ -710,15 +730,15 @@ openssl req -in server.csr -text -noout
 
 ## 12. Referencias
 
-| Recurso | Enlace |
-|---|---|
-| OpenSSL Documentation | https://www.openssl.org/docs/ |
-| EMQX SSL/TLS Configuration | https://docs.emqx.com/en/emqx/latest/network/ssl-tls.html |
+| Recurso                          | Enlace                                                                            |
+| -------------------------------- | --------------------------------------------------------------------------------- |
+| OpenSSL Documentation            | https://www.openssl.org/docs/                                                     |
+| EMQX SSL/TLS Configuration       | https://docs.emqx.com/en/emqx/latest/network/ssl-tls.html                         |
 | WiFiClientSecure (ESP32 Arduino) | https://github.com/espressif/arduino-esp32/tree/master/libraries/WiFiClientSecure |
-| MQTT Security Guide | https://www.emqx.com/en/blog/guide-to-mqtt-security |
-| X.509 Certificate Basics | https://letsencrypt.org/es/how-it-works/ |
-| TLS Handshake Explained | https://tls13.xargs.org/ |
-| ESP32 NTP Time Sync | https://docs.espressif.com/projects/arduino-esp32/en/latest/api/time.html |
+| MQTT Security Guide              | https://www.emqx.com/en/blog/guide-to-mqtt-security                               |
+| X.509 Certificate Basics         | https://letsencrypt.org/es/how-it-works/                                          |
+| TLS Handshake Explained          | https://tls13.xargs.org/                                                          |
+| ESP32 NTP Time Sync              | https://docs.espressif.com/projects/arduino-esp32/en/latest/api/time.html         |
 
 ---
 
